@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Javascript Tutorial</title>
+        <meta charset="UTF-8">
+        <script>
+            function toggleColor(){
+                if (this.style.backgroundColor!=="red"){
+                    this.style.backgroundColor = "red";
+                }
+                else{
+                    this.style.backgroundColor = "yellow";
+                }
+            }
+
+            function hoverColorOn(){
+                this.neighbors.forEach(function(neighbor_id){
+                    let td_of_interest = document.getElementById(neighbor_id);
+                    if (td_of_interest.style.backgroundColor!=="red"){
+                        td_of_interest.style.backgroundColor="blue";
+                    }
+                });
+            }
+
+            function hoverColorOff(){
+                this.neighbors.forEach(function(neighbor_id){
+                    let td_of_interest = document.getElementById(neighbor_id);
+                    if (td_of_interest.style.backgroundColor!=="red"){
+                        td_of_interest.style.backgroundColor="yellow";
+                    }
+                });
+            }
+
+            function convert_1d_2d(index, width){
+                return [parseInt(index/width), index%width];
+            }
+
+            function convert_2d_1d(row, col, width){
+                return row*width+col;
+            }
+
+            function compute_neighbors(val,width,height,kernel_size){
+                val_2d = convert_1d_2d(val, width);
+                var neighbors = [];
+                let delta = parseInt(kernel_size/2);
+                for(i=-delta;i<=delta;++i){
+                    for(j=-delta;j<=delta;++j){
+                        let neighbor_val = [val_2d[0]+i, val_2d[1]+j];
+                        if (neighbor_val[0] >= 0 && neighbor_val[0] < height && 
+                            neighbor_val[1] >= 0 && neighbor_val[1] < width){
+                            neighbor_1d = convert_2d_1d(neighbor_val[0], neighbor_val[1], width);
+                            neighbors.push("id_"+String(neighbor_1d));
+                        }
+                    }
+                }
+                return neighbors;
+            }
+
+            function addCell(tr,val,width,height,kernel_size){
+                var td = document.createElement('td');
+                td.innerHTML = val;
+                td.id="id_"+String(val);
+                td.neighbors = compute_neighbors(val,width,height,kernel_size);
+                td.style.backgroundColor="yellow";
+                td.addEventListener("click", toggleColor);
+                td.addEventListener("mouseover", hoverColorOn);
+                td.addEventListener("mouseout", hoverColorOff);
+                tr.appendChild(td);
+            }
+
+            function addRow(tbl, row, width, height,kernel_size){
+                let min_val = width*row;
+                let max_val = width*(row+1);
+                var tr = document.createElement('tr');
+                for(val=min_val; val<max_val;val++){
+                    addCell(tr, val, width, height,kernel_size);
+                }
+                tbl.appendChild(tr);
+            }
+            
+            function createTable(width, height, kernel_size){
+                tbl = document.getElementById('tbl');
+                tbl.innerHTML = "";
+                for(h=0; h<height;h++){
+                    addRow(tbl, h, width, height, kernel_size);
+                }
+            }
+
+            function initTable(){
+                height = document.getElementById("height").value;
+                width = document.getElementById("width").value;
+                kernel_size = document.getElementById("kernel-size").value;
+                createTable(parseInt(width), parseInt(height), parseInt(kernel_size));
+            }
+        </script>
+        <style>
+        h1 {text-align: center;}
+        table{
+            width:50%;
+            margin-left:auto;
+            margin-right:auto;
+        }
+        th,td{
+            text-align: center;
+            padding: 15px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            border-spacing: 5px;
+        }
+        #input_prompt{
+            text-align:center;
+        }
+        </style>
+    </head>
+    <body onload="initTable()">
+    <h1>Dynamic Image Filter Exercise</h1>
+    
+    <div id="input_prompt">
+    <span>Height: </span>
+    <input type="number" id="height" value="5" onchange="initTable()" />
+    &nbsp
+    <span>Width: </span>
+    <input type="number" id="width" value="5" onchange="initTable()" />
+    &nbsp
+    <span>Kernel Size: </span>
+    <input type="number" id="kernel-size" value="3" onchange="initTable()" />
+    </div>
+
+
+    <br><br><br>
+    <table id='tbl'></table>
+    </body>
+</html>
